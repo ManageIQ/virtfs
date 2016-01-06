@@ -1,6 +1,6 @@
 # VirtFS
 
-TODO: Write a gem description
+A virtual (pseudo) filesystem facility for Ruby.
 
 ## Installation
 
