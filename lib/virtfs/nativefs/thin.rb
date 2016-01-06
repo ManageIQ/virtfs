@@ -1,0 +1,5 @@
+require_relative 'thin/nativefs_base'
+require_relative 'thin/nativefs_file_class'
+require_relative 'thin/nativefs_dir_class'
+require_relative 'thin/nativefs_file'
+require_relative 'thin/nativefs_dir'

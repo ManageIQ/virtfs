@@ -1,0 +1,7 @@
+require_relative 'protofs_base'
+require_relative 'protofs_io_class'
+require_relative 'protofs_file_class'
+require_relative 'protofs_dir_class'
+require_relative 'protofs_io'
+require_relative 'protofs_file'
+require_relative 'protofs_dir'
