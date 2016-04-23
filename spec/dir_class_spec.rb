@@ -327,8 +327,8 @@ describe VirtFS::VDir, "(#{$fs_interface} interface)" do
       it "should enumerate the same file names as the standard Dir.glob - simple glob" do
         VfsRealDir.chdir(@this_dir) do # for VfsRealDir.glob
           VirtFS.dir_chdir(@this_dir)
-          expect(VirtFS::VDir.glob("*")).to eq(VfsRealDir.glob("*"))
-          expect(VirtFS::VDir.glob("*/*.rb")).to eq(VfsRealDir.glob("*/*.rb"))
+          expect(VirtFS::VDir.glob("*")).to match_array(VfsRealDir.glob("*"))
+          expect(VirtFS::VDir.glob("*/*.rb")).to match_array(VfsRealDir.glob("*/*.rb"))
         end
       end
 
