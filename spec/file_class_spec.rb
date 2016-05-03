@@ -765,49 +765,51 @@ describe VirtFS::VFile, "(#{$fs_interface} interface)" do
     end
   end
 
-  describe ".lchmod" do
-    context "with no filesystems mounted" do
-      it "should raise Errno::ENOENT when given a nonexistent file" do
-        expect do
-          VirtFS::VFile.lchmod(0755, "nonexistent_file")
-        end.to raise_error(
-          Errno::ENOENT, "No such file or directory - nonexistent_file"
-        )
+  if VfsRealFile.respond_to?(:lchmod)
+    describe ".lchmod" do
+      context "with no filesystems mounted" do
+        it "should raise Errno::ENOENT when given a nonexistent file" do
+          expect do
+            VirtFS::VFile.lchmod(0755, "nonexistent_file")
+          end.to raise_error(
+            Errno::ENOENT, "No such file or directory - nonexistent_file"
+          )
+        end
+
+        it "should raise Errno::ENOENT when given a file that exists in the native FS" do
+          expect do
+            VirtFS::VFile.lchmod(0755, @full_path)
+          end.to raise_error(
+            Errno::ENOENT, "No such file or directory - #{@full_path}"
+          )
+        end
       end
 
-      it "should raise Errno::ENOENT when given a file that exists in the native FS" do
-        expect do
-          VirtFS::VFile.lchmod(0755, @full_path)
-        end.to raise_error(
-          Errno::ENOENT, "No such file or directory - #{@full_path}"
-        )
-      end
-    end
+      context "with FS mounted on '/'" do
+        before(:each) do
+          @native_fs = nativefs_class.new
+          VirtFS.mount(@native_fs, @root)
+        end
 
-    context "with FS mounted on '/'" do
-      before(:each) do
-        @native_fs = nativefs_class.new
-        VirtFS.mount(@native_fs, @root)
-      end
+        it "should raise Errno::ENOENT when given a nonexistent file" do
+          expect do
+            VirtFS::VFile.lchmod(0755, "nonexistent_file")
+          end.to raise_error(
+            Errno::ENOENT, /No such file or directory/
+          )
+        end
 
-      it "should raise Errno::ENOENT when given a nonexistent file" do
-        expect do
-          VirtFS::VFile.lchmod(0755, "nonexistent_file")
-        end.to raise_error(
-          Errno::ENOENT, /No such file or directory/
-        )
-      end
+        it "should return the number of files processed" do
+          expect(VirtFS::VFile.lchmod(0777, @full_path)).to eq(1)
+          expect(VirtFS::VFile.lchmod(0777, @full_path, @full_path2)).to eq(2)
+        end
 
-      it "should return the number of files processed" do
-        expect(VirtFS::VFile.lchmod(0777, @full_path)).to eq(1)
-        expect(VirtFS::VFile.lchmod(0777, @full_path, @full_path2)).to eq(2)
-      end
-
-      it "should change the permission bits on an existing file" do
-        target_mode = 0755
-        expect(VfsRealFile.stat(@full_path).mode & 0777).to_not eq(target_mode)
-        VirtFS::VFile.lchmod(target_mode, @full_path)
-        expect(VfsRealFile.stat(@full_path).mode & 0777).to eq(target_mode)
+        it "should change the permission bits on an existing file" do
+          target_mode = 0755
+          expect(VfsRealFile.stat(@full_path).mode & 0777).to_not eq(target_mode)
+          VirtFS::VFile.lchmod(target_mode, @full_path)
+          expect(VfsRealFile.stat(@full_path).mode & 0777).to eq(target_mode)
+        end
       end
     end
   end

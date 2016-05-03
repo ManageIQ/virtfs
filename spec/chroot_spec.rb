@@ -101,8 +101,8 @@ describe "VirtFS.dir_chroot (#{$fs_interface} interface)" do
     it "should enumerate the same file names as the standard Dir.glob - simple glob" do
       VirtFS::VDir.chroot(@new_root)
       VfsRealDir.chdir(@new_root) do # for VfsRealDir.glob
-        expect(VirtFS::VDir.glob("*")).to eq(VfsRealDir.glob("*"))
-        expect(VirtFS::VDir.glob("*/*.rb")).to eq(VfsRealDir.glob("*/*.rb"))
+        expect(VirtFS::VDir.glob("*")).to match_array(VfsRealDir.glob("*"))
+        expect(VirtFS::VDir.glob("*/*.rb")).to match_array(VfsRealDir.glob("*/*.rb"))
       end
     end
 
