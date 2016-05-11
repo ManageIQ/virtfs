@@ -1,6 +1,7 @@
 # VirtFS
 
 [![Build Status](https://travis-ci.org/ManageIQ/virtfs.svg)](https://travis-ci.org/ManageIQ/virtfs)
+[![Code Climate](https://codeclimate.com/github/ManageIQ/virtfs/badges/gpa.svg)](https://codeclimate.com/github/ManageIQ/virtfs)
 
 A virtual (pseudo) filesystem facility for Ruby.
 
