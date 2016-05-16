@@ -91,14 +91,6 @@ describe VirtFS::VDir, "(#{$fs_interface} interface)" do
       end
     end
 
-    it "should not change the position when given a value not previously returned by #tell or #pos" do
-      VirtFS::VDir.open(@spec_dir) do |dir|
-        pos0 = dir.pos
-        dir.pos = pos0 + 1
-        expect(dir.pos).to eq(pos0)
-      end
-    end
-
     it "should change the position when given a value previously returned by #tell or #pos" do
       VirtFS::VDir.open(@spec_dir) do |dir|
         pos0 = dir.pos
@@ -173,14 +165,6 @@ describe VirtFS::VDir, "(#{$fs_interface} interface)" do
     it "should return the directory object" do
       VirtFS::VDir.open(@spec_dir) do |dir|
         (0..4).each { |p| expect(dir.seek(p)).to eq(dir) }
-      end
-    end
-
-    it "should not change the position when given a value not previously returned by #tell or #pos" do
-      VirtFS::VDir.open(@spec_dir) do |dir|
-        pos0 = dir.tell
-        dir.seek(pos0 + 1)
-        expect(dir.tell).to eq(pos0)
       end
     end
 
