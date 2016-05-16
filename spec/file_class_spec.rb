@@ -1125,6 +1125,10 @@ describe VirtFS::VFile, "(#{$fs_interface} interface)" do
         expect(VirtFS::VFile.readable?("nonexistent_file")).to be false
       end
 
+      #
+      # NOTE: This test fails when run under Fusion shared folders.
+      # Could be due to silent failure of chmod.
+      #
       it "should return false when given a non-readable file" do
         VfsRealFile.chmod(0300, @full_path)
         expect(VirtFS::VFile.readable?(@full_path)).to be false
@@ -1166,6 +1170,10 @@ describe VirtFS::VFile, "(#{$fs_interface} interface)" do
         expect(VirtFS::VFile.readable_real?("nonexistent_file")).to be false
       end
 
+      #
+      # NOTE: This test fails when run under Fusion shared folders.
+      # Could be due to silent failure of chmod.
+      #
       it "should return false when given a non-readable file" do
         VfsRealFile.chmod(0300, @full_path)
         expect(VirtFS::VFile.readable_real?(@full_path)).to be false
@@ -1897,6 +1905,10 @@ describe VirtFS::VFile, "(#{$fs_interface} interface)" do
         expect(VirtFS::VFile.writable?("nonexistent_file")).to be false
       end
 
+      #
+      # NOTE: This test fails when run under Fusion shared folders.
+      # Could be due to silent failure of chmod.
+      #
       it "should return false when given a non-writable file" do
         VfsRealFile.chmod(0500, @full_path)
         expect(VirtFS::VFile.writable?(@full_path)).to be false
@@ -1938,6 +1950,10 @@ describe VirtFS::VFile, "(#{$fs_interface} interface)" do
         expect(VirtFS::VFile.writable_real?("nonexistent_file")).to be false
       end
 
+      #
+      # NOTE: This test fails when run under Fusion shared folders.
+      # Could be due to silent failure of chmod.
+      #
       it "should return false when given a non-writable file" do
         VfsRealFile.chmod(0500, @full_path)
         expect(VirtFS::VFile.writable_real?(@full_path)).to be false

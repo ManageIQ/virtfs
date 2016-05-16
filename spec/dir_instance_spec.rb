@@ -103,6 +103,10 @@ describe VirtFS::VDir, "(#{$fs_interface} interface)" do
       end
     end
 
+    #
+    # NOTE: This test fails when run under Fusion shared folders,
+    # but only for the thick interface. Passes on Travis.
+    #
     it "should change the position for subsequent reads" do
       reads_by_pos = {}
       VirtFS::VDir.open(@spec_dir) do |dir|
@@ -180,6 +184,10 @@ describe VirtFS::VDir, "(#{$fs_interface} interface)" do
       end
     end
 
+    #
+    # NOTE: This test fails when run under Fusion shared folders,
+    # but only for the thick interface. Passes on Travis.
+    #
     it "should change the position for subsequent reads" do
       reads_by_pos = {}
       VirtFS::VDir.open(@spec_dir) do |dir|
