@@ -2,7 +2,7 @@ module VirtFS
   class Stat
     include Comparable
 
-    ATTR_ACCESSORS = %w(
+    ATTR_ACCESSORS = %i(
       atime
       blksize
       blockdev?
@@ -47,7 +47,7 @@ module VirtFS
     )
 
     def self.iv_name(name)
-      name = name.chomp('?') if name.end_with?('?')
+      name = name.to_s.chomp('?') if name.to_s.end_with?('?')
       "@#{name}"
     end
 
@@ -78,8 +78,8 @@ module VirtFS
 
     def hash_init(obj)
       ATTR_ACCESSORS.each do |aa|
-        next unless aa.key?(aa)
-        instance_variable_set(iv_name(aa), obj.send(aa))
+        next unless obj.key?(aa)
+        instance_variable_set(iv_name(aa), obj[aa])
       end
     end
 
