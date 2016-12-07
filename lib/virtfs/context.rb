@@ -173,7 +173,7 @@ module VirtFS
         end
       end
       return cp if include_last
-      VfsRealFile.join(cp, last_component)
+      VfsRealFile.join(cp, last_component.to_s)
     end
 
     def cwd_root
