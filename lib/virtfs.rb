@@ -1,18 +1,34 @@
 require 'pathname'
 
-require 'virtfs/version.rb'
-require 'virtfs/exception.rb'
-require 'virtfs/context.rb'
-require 'virtfs/context_manager.rb'
-require 'virtfs/base.rb'
-require 'virtfs/context_switch.rb'
-require 'virtfs/find.rb'
-require 'virtfs/file_modes_and_options.rb'
-require 'virtfs/delegate_modules.rb'
-require 'virtfs/io.rb'
-require 'virtfs/file.rb'
-require 'virtfs/dir.rb'
-require 'virtfs/stat.rb'
-require 'virtfs/thin_dir_delegator.rb'
-require 'virtfs/thin_io_delegator_methods.rb'
-require 'virtfs/thin_file_delegator.rb'
+VfsRealDir       = ::Dir
+VfsRealFile      = ::File
+VfsRealIO        = ::IO
+
+require_relative 'virtfs/version.rb'
+require_relative 'virtfs/exception.rb'
+require_relative 'virtfs/context.rb'
+require_relative 'virtfs/context_manager.rb'
+require_relative 'virtfs/file_modes_and_options.rb'
+require_relative 'virtfs/context_switch_class_methods.rb'
+require_relative 'virtfs/find_class_methods.rb'
+require_relative 'virtfs/activation.rb'
+require_relative 'virtfs/delegate_module.rb'
+require_relative 'virtfs/stat.rb'
+require_relative 'virtfs/thin_dir_delegator.rb'
+require_relative 'virtfs/thin_file_delegator.rb'
+
+module VirtFS
+  @activated = false
+
+  extend Activation
+  extend DelegateModule
+  extend ContextSwitchClassMethods
+  extend FindClassMethods
+end
+
+require_relative 'virtfs/dir_instance_delegate.rb'
+require_relative 'virtfs/file_instance_delegate.rb'
+require_relative 'virtfs/io_instance_delegate.rb'
+require_relative 'virtfs/v_io.rb'
+require_relative 'virtfs/v_file.rb'
+require_relative 'virtfs/v_dir.rb'

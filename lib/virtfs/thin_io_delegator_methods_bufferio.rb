@@ -1,5 +1,5 @@
 module VirtFS
-  module ThinIODelegatorMethods
+  module ThinIODelegatorMethodsBufferio
     attr_reader :min_read_buf_sz, :read_buffer, :end_byte_addr, :fs_io_obj
 
     MIN_READ_BUF_SZ = 1024 * 32

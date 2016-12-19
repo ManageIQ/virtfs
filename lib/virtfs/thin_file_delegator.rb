@@ -1,3 +1,5 @@
+require_relative 'thin_io_delegator_methods.rb'
+
 module VirtFS
   class ThinFileDelegator
     attr_reader :fs_file_obj
