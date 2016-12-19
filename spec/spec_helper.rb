@@ -1,5 +1,6 @@
 require "tmpdir"
 require "tempfile"
+require "find"
 require "virtfs"
 
 if ENV['FS_INTERFACE'] && ENV['FS_INTERFACE'].downcase == "thick"
@@ -34,8 +35,7 @@ end
 def block_dev_file
   dev_dir = "/dev"
   return nil unless VfsRealDir.exist?(dev_dir)
-  VfsRealDir.foreach(dev_dir) do |f|
-    f = VfsRealFile.join(dev_dir, f)
+  Find.find(dev_dir) do |f|
     next unless VfsRealFile.blockdev?(f)
     return f
   end
@@ -45,8 +45,7 @@ end
 def char_dev_file
   dev_dir = "/dev"
   return nil unless VfsRealDir.exist?(dev_dir)
-  VfsRealDir.foreach(dev_dir) do |f|
-    f = VfsRealFile.join(dev_dir, f)
+  Find.find(dev_dir) do |f|
     next unless VfsRealFile.chardev?(f)
     return f
   end
