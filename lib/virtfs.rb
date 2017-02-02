@@ -3,6 +3,7 @@ require 'pathname'
 VfsRealDir       = ::Dir
 VfsRealFile      = ::File
 VfsRealIO        = ::IO
+VfsRealPathname  = ::Pathname
 
 require_relative 'virtfs/version.rb'
 require_relative 'virtfs/exception.rb'
@@ -16,6 +17,8 @@ require_relative 'virtfs/delegate_module.rb'
 require_relative 'virtfs/stat.rb'
 require_relative 'virtfs/thin_dir_delegator.rb'
 require_relative 'virtfs/thin_file_delegator.rb'
+require_relative 'virtfs/kernel'
+require_relative 'virtfs/v_pathname.rb'
 
 module VirtFS
   @activated = false
