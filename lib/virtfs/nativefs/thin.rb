@@ -10,9 +10,10 @@ module VirtFS::NativeFS # rubocop:disable Style/ClassAndModuleChildren
     include FileClassMethods
     include DirClassMethods
 
-    def initialize
-      @mount_point  = nil
-      @name         = self.class.name
+    def initialize(root = VfsRealFile::SEPARATOR)
+      @mount_point = nil
+      @name        = self.class.name
+      @root        = root
     end
 
     def thin_interface?
@@ -22,5 +23,10 @@ module VirtFS::NativeFS # rubocop:disable Style/ClassAndModuleChildren
     def umount
       @mount_point = nil
     end
+
+    def apply_root(path)
+      VfsRealFile.join(@root, path)
+    end
+    private :apply_root
   end
 end
