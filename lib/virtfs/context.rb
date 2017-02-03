@@ -68,9 +68,10 @@ module VirtFS
     end
 
     def fs_on(mount_point)
-      mount_point += VfsRealFile::SEPARATOR unless mount_point.end_with?(VfsRealFile::SEPARATOR)
+      mp = full_path(mount_point, true, *cwd_root)
+      mp += VfsRealFile::SEPARATOR unless mp.end_with?(VfsRealFile::SEPARATOR)
       @mount_mutex.synchronize do
-        @fs_lookup[mount_point]
+        @fs_lookup[mp]
       end
     end
 
@@ -120,7 +121,7 @@ module VirtFS
     def chdir(dir)
       fs = path = nil
       @dir_mutex.synchronize do
-        nwd = remove_root(full_path(dir, true, @cwd, @root), @root)
+        nwd = remove_root(local_path(dir, @cwd, @root), @root)
         fs, path = mount_lookup(nwd)
         @cwd = nwd
       end
@@ -191,12 +192,15 @@ module VirtFS
 
     private
 
+    def local_path(path, cwd, root)
+      lpath = path || cwd
+      lpath = VfsRealFile.join(cwd, path) if Pathname(path).relative?
+      lpath = VirtFS.normalize_path(lpath)
+      apply_root(lpath, root)
+    end
+
     def full_path(path, include_last, cwd, root)
-      local_path = path || cwd
-      local_path = VfsRealFile.join(cwd, path) if Pathname(path).relative?
-      local_path = VirtFS.normalize_path(local_path)
-      local_path = apply_root(local_path, root)
-      expand_links(local_path, include_last)
+      expand_links(local_path(path, cwd, root), include_last)
     end
 
     #

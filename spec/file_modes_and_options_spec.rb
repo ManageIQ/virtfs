@@ -37,7 +37,7 @@ require 'spec_helper'
 #
 #     :textmode           => Open the file in text mode (the default).
 #
-describe VirtFS::FileModesAndOptions, "(#{$fs_interface} interface)" do
+describe VirtFS::FileModesAndOptions, "(#{$fs_interface} interface)" do # rubocop:disable Style/GlobalVars
   before(:each) do
     reset_context
   end
@@ -500,7 +500,7 @@ describe VirtFS::FileModesAndOptions, "(#{$fs_interface} interface)" do
 
       describe "mode_bits" do
         it "should return (File::WRONLY | File::TRUNC  | File::CREAT)" do
-          expect(@fmo.mode_bits).to eq(File::WRONLY | File::TRUNC  | File::CREAT)
+          expect(@fmo.mode_bits).to eq(File::WRONLY | File::TRUNC | File::CREAT)
         end
       end
 
@@ -571,8 +571,8 @@ describe VirtFS::FileModesAndOptions, "(#{$fs_interface} interface)" do
       end
 
       describe "mode_bits" do
-        it "should return (File::RDWR   | File::TRUNC  | File::CREAT)" do
-          expect(@fmo.mode_bits).to eq(File::RDWR   | File::TRUNC  | File::CREAT)
+        it "should return (File::RDWR | File::TRUNC | File::CREAT)" do
+          expect(@fmo.mode_bits).to eq(File::RDWR | File::TRUNC | File::CREAT)
         end
       end
 
@@ -715,8 +715,8 @@ describe VirtFS::FileModesAndOptions, "(#{$fs_interface} interface)" do
       end
 
       describe "mode_bits" do
-        it "should return (File::RDWR   | File::APPEND | File::CREAT)" do
-          expect(@fmo.mode_bits).to eq(File::RDWR   | File::APPEND | File::CREAT)
+        it "should return (File::RDWR | File::APPEND | File::CREAT)" do
+          expect(@fmo.mode_bits).to eq(File::RDWR | File::APPEND | File::CREAT)
         end
       end
 
@@ -1534,13 +1534,16 @@ describe VirtFS::FileModesAndOptions, "(#{$fs_interface} interface)" do
       )
     end
 
-    it "should raise ArgumentError when mode specified twice" do
-      expect do
-        @fmo = VirtFS::FileModesAndOptions.new("rb", :mode => "rb")
-      end.to raise_error(
-        ArgumentError, "mode specified twice"
-      )
-    end
+    #
+    # This restriction has been removed.
+    #
+    # it "should raise ArgumentError when mode specified twice" do
+    #   expect do
+    #     @fmo = VirtFS::FileModesAndOptions.new("rb", :mode => "rb")
+    #   end.to raise_error(
+    #     ArgumentError, "mode specified twice"
+    #   )
+    # end
 
     it "should raise ArgumentError when both binmode and textmode are specified" do
       expect do

@@ -1,5 +1,5 @@
 module VirtFS
-  class VIO
+  class VIO # rubocop:disable ClassLength
     include IOInstanceDelegate
 
     VfsRealIO.constants.each { |cn| const_set(cn, VfsRealIO.const_get(cn)) }
@@ -28,7 +28,7 @@ module VirtFS
       self
     end
 
-    def set_encoding(*args)
+    def set_encoding(*args) # rubocop:disable Style/AccessorMethodName
       super
       self
     end
@@ -47,13 +47,15 @@ module VirtFS
         end
       end
 
-      def copy_stream(from, to, max_length = nil, offset = 0)
+      # def binwrite()
+
+      def copy_stream(from, to, max_length = nil, offset = 0) # rubocop:disable CyclomaticComplexity
         from_file = from.is_a?(VIO) ? from : VFile.open(from, "rb")
-        to_file   = to.is_a?(VIO)   ? to   : VFile.open(to, "wb")
+        to_file   = to.is_a?(VIO)   ? to   : VFile.open(to, "wb") # rubocop:disable SpaceAroundOperators
         return copy_from_to(from_file, to_file, max_length, offset)
       ensure
         from_file.close unless from_file.nil? || from.is_a?(VIO)
-        to_file.close   unless to_file.nil?   || to.is_a?(VIO)
+        to_file.close   unless to_file.nil?   || to.is_a?(VIO)    # rubocop:disable SpaceAroundOperators
       end
 
       #
@@ -163,7 +165,7 @@ module VirtFS
         return separator, limit, options
       end
 
-      def length_offset_options(args)
+      def length_offset_options(args) # rubocop:disable AbcSize, PerceivedComplexity, CyclomaticComplexity
         case args.length
         when 0
           return nil, 0, {}
