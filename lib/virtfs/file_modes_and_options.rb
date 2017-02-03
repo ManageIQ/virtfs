@@ -36,7 +36,7 @@ module VirtFS
   #
   #     :textmode           => Open the file in text mode (the default).
   #
-  class FileModesAndOptions
+  class FileModesAndOptions # rubocop:disable ClassLength
     attr_reader :external_encoding, :external_encoding_str
     attr_reader :internal_encoding, :internal_encoding_str
     attr_reader :permissions, :mode_bits, :options
@@ -44,7 +44,7 @@ module VirtFS
 
     BINARY_ENCODING = "ASCII-8BIT"
 
-    def initialize(*args)
+    def initialize(*args) # rubocop:disable AbcSize, PerceivedComplexity
       @args      = args
       @options   = {}
       @mode_bits = 0
@@ -59,13 +59,13 @@ module VirtFS
 
       @mode_bits = VFile::RDONLY if @mode_bits == 0
 
-      if @external_encoding_str.empty?
+      if @external_encoding_str.empty? || @external_encoding_str.empty? == "-"
         @external_encoding = Encoding.default_external
       else
         @external_encoding = Encoding.find(@external_encoding_str)
       end
 
-      if @internal_encoding_str.empty?
+      if @internal_encoding_str.empty? || @internal_encoding_str == "-"
         @internal_encoding = Encoding.default_internal
       else
         @internal_encoding = Encoding.find(@internal_encoding_str)
@@ -151,7 +151,7 @@ module VirtFS
       @closed = true
     end
 
-    def set_encoding(*args)
+    def set_encoding(*args) # rubocop:disable AccessorMethodName, AbcSize, PerceivedComplexity, CyclomaticComplexity, MethodLength, LineLength
       raise ArgumentError, "wrong number of arguments (#{args.length} for 1..2)" if args.length < 1 || args.length > 2
       unless args[0].is_a?(Encoding) || args[0].respond_to?(:to_str)
         raise TypeError, "no implicit conversion of #{args[0].class.name} into String"
@@ -183,10 +183,10 @@ module VirtFS
       @internal_encoding = Encoding.find(@internal_encoding_str) unless @internal_encoding_str.empty?
       nil
     end
-    
+
     private
 
-    def process_args(args)
+    def process_args(args) # rubocop:disable AbcSize, PerceivedComplexity, CyclomaticComplexity
       case args.length
       when 0
         # mode = "r"
@@ -215,7 +215,7 @@ module VirtFS
       process_options(@options)
     end
 
-    def mode_arg(mode)
+    def mode_arg(mode) # rubocop:disable AbcSize, PerceivedComplexity, CyclomaticComplexity
       if mode.respond_to?(:to_int)
         @mode_bits = mode.to_int
       else
@@ -236,7 +236,7 @@ module VirtFS
       @mode_provided = true
     end
 
-    def mode_str_to_bits(mode_str)
+    def mode_str_to_bits(mode_str) # rubocop:disable AbcSize, CyclomaticComplexity
       if mode_str[-1] == "b"
         binmode
         mode_str[-1] = ""
@@ -255,7 +255,7 @@ module VirtFS
                    end
     end
 
-    def process_options(opts)
+    def process_options(opts) # rubocop:disable AbcSize, PerceivedComplexity, CyclomaticComplexity, MethodLength
       return if opts.empty?
 
       @autoclose = opts[:autoclose] if opts.key?(:autoclose)
@@ -264,7 +264,7 @@ module VirtFS
         binmode
       end
       if opts[:encoding]
-        raise ArgumentError, "encoding specified twice" unless @external_encoding_str.empty? && @internal_encoding_str.empty?
+        raise ArgumentError, "encoding specified twice" unless @external_encoding_str.empty? && @internal_encoding_str.empty? # rubocop:disable LineLength
         @external_encoding_str, @internal_encoding_str = opts[:encoding].split(":")
         @external_encoding_str = @external_encoding_str.to_s
         @internal_encoding_str = @internal_encoding_str.to_s
@@ -278,7 +278,7 @@ module VirtFS
         @internal_encoding_str = opts[:internal_encoding]
       end
       if opts[:mode]
-        raise ArgumentError, "mode specified twice" if @mode_provided
+        # raise ArgumentError, "mode specified twice" if @mode_provided
         mode_arg(opts[:mode])
       end
       if opts.key?(:textmode)
