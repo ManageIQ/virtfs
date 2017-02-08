@@ -67,6 +67,14 @@ module VirtFS
       VfsRealFile.expand_path(p, relative_to || context.getwd).sub(/^[a-zA-Z]:/, "") # XXX
     end
 
+    # Invoke block withing the given filesystem context
+    #
+    # @api private
+    # @param fs [VirtFS::FS] filesystem intstance through which to invoke block
+    # @param path [String] path to specify to block
+    #
+    # @raise [VirtFS::NotImplementedError] if filesystem method does not exist
+    #
     def fs_call(fs, path = nil, &block)
       block.arity < 1 ? fs.instance_eval(&block) : fs.instance_exec(path, &block)
     rescue NoMethodError => err
@@ -75,6 +83,11 @@ module VirtFS
       raise VirtFS::NotImplementedError.new(fs, err.name)
     end
 
+  # Invoke block using fully resolved filesystem path
+  #
+  # @api private
+  # @see .fs_call
+  # @see Context#path_lookup
     def fs_lookup_call(path, raise_full_path = false, include_last = true, &block)
       fs, p = path_lookup(path, raise_full_path, include_last)
       fs_call(fs, p, &block)

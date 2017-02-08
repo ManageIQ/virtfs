@@ -1,4 +1,6 @@
 module VirtFS
+  # Dispatches Dir calls to/from VirtFS and the 'Thin' subsystem
+  #
   class ThinDirDelegator
     # Instance methods
     def initialize(fs_dir_obj, creation_path, fs_path, _hash_args)

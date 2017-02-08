@@ -1,4 +1,6 @@
 module VirtFS
+  # ByteRange utility class, encapsulate a range of bytes as given
+  # by their first / last offsets
   class ByteRange
     attr_accessor :first, :last
 
