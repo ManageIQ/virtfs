@@ -3,6 +3,7 @@ require_relative 'io_buffer'
 require_relative 'thin_io_delegator_methods_bufferio'
 
 module VirtFS
+  # Dispatches File calls to/from VirtFS and the 'Thin' subsystem
   #
   # IO objects are not instantiated directly, because
   # IO.new delegates to VfsRealIO. These instances methods

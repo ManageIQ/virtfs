@@ -1,4 +1,10 @@
 module VirtFS
+  # FS-specific state under which FS calls occur.
+  #
+  # VirtFS maps an independent context instance to each
+  # Ruby thread group, and internally switches to it before
+  # dispatching target FS calls from that thread.
+  # This class implements the core functionality behind the FS context
   class Context
     attr_reader :key
 
@@ -14,6 +20,10 @@ module VirtFS
       @key          = nil
     end
 
+    # Set key used to uniquely identify the context
+    #
+    # @param val [String] context identifier
+    # @raise [RuntimeError] if key already assigned
     def key=(val)
       @dir_mutex.synchronize do
         raise "Context already assigned to key: #{@key}" if !@key.nil? && !val.nil?
@@ -21,6 +31,18 @@ module VirtFS
       end
     end
 
+    # Mount the specified FS instance at the specified mount point.
+    # This registers specified fs to be accessed through the specified mount
+    # point via internal mechanisms. After this point any calls to this mount
+    # point through VirtFS under this context will be mapped through the specified
+    # fs instance
+    #
+    # @param fs_instance [VirtFS::FS] instance of VirtFS implementation corresponding
+    #   to filesystem to mount
+    # @param mount_point [String] path which to mount filesystem under
+    #
+    # @raise [SystemCallError] if mount point cannot be resolved
+    # @raise [RuntimeError] if mount point is being used
     def mount(fs_instance, mount_point)
       mp_display  = mount_point
 
@@ -43,6 +65,10 @@ module VirtFS
       nil
     end
 
+    # Unmount the FS mounted at the specified mount point
+    #
+    # @param mount_point [String] mount point to unmount
+    # @raise [RuntimeError] if mount point is not mounted
     def umount(mount_point)
       mount_point = full_path(mount_point, true, *cwd_root)
       @mount_mutex.synchronize do
@@ -55,6 +81,7 @@ module VirtFS
       nil
     end
 
+    # @return [Array<String>] array of mount points
     def mount_points
       @mount_mutex.synchronize do
         @mount_points.collect do |p|
@@ -75,10 +102,16 @@ module VirtFS
       end
     end
 
+    # @return [Boolean] indicating if mount point is mounted
     def mounted?(mount_point)
       !fs_on(mount_point).nil?
     end
 
+    # Change virtual file system root, after which all root calls to mount point will
+    # be mapped to specified dir
+    #
+    # @param dir [String] new dir to assign as virtfs context root
+    # @raise [SystemCallError] if specified dir does not exist
     def chroot(dir)
       raise SystemCallError.new(dir, Errno::ENOENT::Errno) unless dir_exist?(dir)
       @dir_mutex.synchronize do
@@ -88,6 +121,9 @@ module VirtFS
       0
     end
 
+    # Invoke block with the specified root, restoring before returning
+    #
+    # @see chroot
     def with_root(dir)
       raise SystemCallError.new(dir, Errno::ENOENT::Errno) unless dir_exist?(dir)
       @dir_mutex.synchronize do
@@ -109,6 +145,7 @@ module VirtFS
       end
     end
 
+    # @return [Boolean] indicating if specified dir exists
     def dir_exist?(dir)
       begin
         fs, p = path_lookup(dir)
@@ -118,6 +155,9 @@ module VirtFS
       VirtFS.fs_call(fs) { dir_exist?(p) }
     end
 
+    # Change virtual filesystem working directory
+    #
+    # @param dir [String] new dir to assign to virtfs cwd
     def chdir(dir)
       fs = path = nil
       @dir_mutex.synchronize do
@@ -128,12 +168,23 @@ module VirtFS
       fs.dir_chdir(path) if fs.respond_to?(:dir_chdir)
     end
 
+    # @return [String] current filesystem working directory
     def getwd
       @cwd
     end
 
-    #
     # Expand symbolic links and perform mount indirection look up.
+    #
+    # @param path [String] path to lookup
+    # @param raise_full_path [Boolean] indicates if error should be raised if lookup fails
+    # @param include_last [Boolean] indicates if last path component should be returned
+    #
+    # @raise [RunTimeError] if path could not be looked up and raise_full_path is true
+    # @raise [SystemCallError] if path could not be looked up
+    #
+    # @api private
+    # @see #mount_lookup
+    # @see #expand_links
     #
     def path_lookup(path, raise_full_path = false, include_last = true)
       mount_lookup(full_path(path, include_last, *cwd_root))
@@ -143,11 +194,13 @@ module VirtFS
       raise SystemCallError.new(path, Errno::ENOENT::Errno)
     end
 
-    #
     # Expand symbolic links in the path.
     # This must be done here, because a symlink in one file system
     # can point to a file in another filesystem.
     #
+    # @api private
+    # @param p [String] path to lookup
+    # @param include_last [Boolean] indicates if last path component should be returned
     def expand_links(p, include_last = true)
       cp = VfsRealFile::SEPARATOR
       components = p.split(VfsRealFile::SEPARATOR)
@@ -177,6 +230,9 @@ module VirtFS
       VfsRealFile.join(cp, last_component.to_s)
     end
 
+    # Helper to change virtual filesystem working directory to filesystem root
+    # @api private
+    #
     def cwd_root
       @dir_mutex.synchronize do
         return @cwd, @root
@@ -208,6 +264,7 @@ module VirtFS
     # Given a path, return its corresponding file system
     # and the part of the path relative to that file system.
     # It assumes symbolic links have already been expanded.
+    # @api private
     #
     def mount_lookup(path) # private
       spath = "#{path}#{VfsRealFile::SEPARATOR}"

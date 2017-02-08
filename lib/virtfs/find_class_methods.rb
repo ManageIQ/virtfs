@@ -1,10 +1,16 @@
 module VirtFS
+  # VirtFS Find Class representation - implements the core Ruby Find methods,
+  # dispatching to underlying mounted VirtFS filesystems
   module FindClassMethods
     #
     # Modified version of Find.find:
     # - Accepts only a single path.
     # - Can be restricted by depth - optimization for glob searches.
     # - Will work with VirtFS, even when it's not active.
+    #
+    # @param path [String] starting directory of the find
+    # @param max_depth [Integer] max number of levels to decend befroelookup
+    # @yield files found
     #
     def find(path, max_depth = nil)
       raise SystemCallError.new(path, Errno::ENOENT::Errno) unless VirtFS::VFile.exist?(path)
@@ -41,6 +47,9 @@ module VirtFS
       end
     end
 
+    # Implementation of Find.prune
+    #
+    # @raise [RuntimeError] always
     def prune
       throw :prune
     end
@@ -50,6 +59,12 @@ module VirtFS
       str.gsub(/\\./, "X").count(GLOB_CHARS) != 0
     end
 
+    # Returns files matching glob pattern
+    #
+    # @api private
+    # @param glob_pattern [String,Regex] pattern to search for
+    # @return [String] paths to files found
+    #
     def dir_and_glob(glob_pattern)
       glob_path = Pathname.new(glob_pattern)
 
@@ -77,6 +92,11 @@ module VirtFS
       return normalize_path(search_path), specified_path, VfsRealFile.join(components)
     end
 
+    # Return max levels which glob pattern may resolve to
+    #
+    # @api private
+    # @param glob_pattern [String,Regex] pattern to search for
+    # @return [Integer] max levels which pattern may match
     def glob_depth(glob_pattern)
       path_components = Pathname(glob_pattern).each_filename.to_a
       return nil if path_components.include?('**')

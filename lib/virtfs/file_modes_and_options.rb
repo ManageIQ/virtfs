@@ -1,4 +1,7 @@
 module VirtFS
+
+  # Utilty class to convert String File Modes and Options to their
+  # corresponding Ruby Constants.
   #
   # *args --> mode="r" <,permission> <,options>
   #           mode       --> String or Integer

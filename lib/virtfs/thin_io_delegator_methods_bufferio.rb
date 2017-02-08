@@ -1,4 +1,6 @@
 module VirtFS
+  # Dispatches BufferIO calls to/from VirtFS and the 'Thin' subsystem
+  #
   module ThinIODelegatorMethodsBufferio
     attr_reader :min_read_buf_sz, :read_buffer, :end_byte_addr, :fs_io_obj
 

@@ -1,4 +1,8 @@
 module VirtFS
+  # Central/Global VirtFS context manager.
+  # Provides a singleton context management interface for use in VirtFS.
+  #
+  # Contexts are recorded here on a per-thread-group basis
   class ContextManager
     attr_reader :thread_group
 

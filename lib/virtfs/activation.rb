@@ -4,10 +4,16 @@ module VirtFS
       @activate_mutex ||= Mutex.new
     end
 
+    # @return [Boolean] indicating if VirtFS is active
+    #
+    # @see .activate!
+    # @see .deactivate!
     def activated?
       @activated
     end
 
+    # Overrides Ruby's native Dir, File, and IO classes
+    # with corresponding VirtFS classes
     def activate!(enable_require = false)
       activate_mutex.synchronize do
         raise "VirtFS.activate! already activated" if @activated
@@ -33,6 +39,8 @@ module VirtFS
       true
     end
 
+    # Restores Ruby's native Dir, File, and IO classes
+    # to their defaults
     def deactivate!
       activate_mutex.synchronize do
         raise "VirtFS.deactivate! not activated" unless @activated
@@ -54,6 +62,9 @@ module VirtFS
       true
     end
 
+    # Invokes the given block in an activated context
+    #
+    # @see .activate!
     def with(enable_require = false)
       if activated?
         yield
@@ -67,6 +78,9 @@ module VirtFS
       end
     end
 
+    # Invokes the given block in a deactivated context
+    #
+    # @see .deactivate!
     def without
       if !activated?
         yield

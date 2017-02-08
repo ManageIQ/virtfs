@@ -1,9 +1,16 @@
 module VirtFS
+  # VirtFS IO representation - implements the core Ruby IO methods, dispatching
+  # to underlying mounted VirtFS filesystems
+  #
   class VIO # rubocop:disable ClassLength
     include IOInstanceDelegate
 
     VfsRealIO.constants.each { |cn| const_set(cn, VfsRealIO.const_get(cn)) }
 
+    # VFile initializer
+    #
+    # @param io_obj [VirtFS::FS::IO] handle to filesystem specific io obj
+    #
     def initialize(io_obj)
       __setobj__(io_obj)
     end
@@ -39,6 +46,13 @@ module VirtFS
 
     # Class methods
     class << self
+      # Read specified number of bytes from file
+      #
+      # @param f [String] file to ready
+      # @param length [Integer] number of bytes to read
+      # @param offset [Integer] position to start reading at
+      #
+      # @return [Array<Byte>] bytes read from file (up to length size)
       def binread(f, length = nil, offset = 0)
         VFile.open(f, "rb") do |fobj|
           fobj.pos = offset
@@ -49,6 +63,12 @@ module VirtFS
 
       # def binwrite()
 
+      # Copy stream from source to destination
+      #
+      # @param from [String] file stream to copy
+      # @param to [String] file stream to copy to
+      # @param max_length [Integer] max number of bytes to copy
+      # @param offset [Integer] position to start coying from
       def copy_stream(from, to, max_length = nil, offset = 0) # rubocop:disable CyclomaticComplexity
         from_file = from.is_a?(VIO) ? from : VFile.open(from, "rb")
         to_file   = to.is_a?(VIO)   ? to   : VFile.open(to, "wb") # rubocop:disable SpaceAroundOperators
@@ -58,6 +78,7 @@ module VirtFS
         to_file.close   unless to_file.nil?   || to.is_a?(VIO)    # rubocop:disable SpaceAroundOperators
       end
 
+      # Invoke block for each file matching pattern
       #
       # IO.foreach( portname, separator=$/ <, options> ) { | line | . . . } -> nil
       # IO.foreach( portname, limit <, options> ) { | line | . . . } -> nil
@@ -115,10 +136,12 @@ module VirtFS
         obj.to_io # TODO: wrap?
       end
 
-      #
       # Instantiate IO instance.
       #
-
+      # @param integer_fd [Integer] file descriptor
+      # @param mode [String] mode to open IO instance
+      # @param hash_options options to forward to IO initialiezr
+      #
       def new(integer_fd, mode = "r", hash_options = {})
         #
         # Directly instantiating an IO instance (not through File)
@@ -131,6 +154,9 @@ module VirtFS
       end
       alias_method :for_fd, :new
 
+      # Open IO Instance and invoke block w/ it before closing
+      #
+      # @see #new
       def open(*args)
         io_obj = new(*args) # IO.new or File.new
         return io_obj unless block_given?

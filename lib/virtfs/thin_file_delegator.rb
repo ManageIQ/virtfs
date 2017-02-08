@@ -1,6 +1,8 @@
 require_relative 'thin_io_delegator_methods.rb'
 
 module VirtFS
+  # Dispatches File calls to/from VirtFS and the 'Thin' subsystem
+  #
   class ThinFileDelegator
     attr_reader :fs_file_obj
 

@@ -20,6 +20,7 @@ require_relative 'virtfs/thin_file_delegator.rb'
 require_relative 'virtfs/kernel'
 require_relative 'virtfs/v_pathname.rb'
 
+# VirtFS - Ruby Virtual File System Interface
 module VirtFS
   @activated = false
 

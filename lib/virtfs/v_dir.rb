@@ -1,9 +1,16 @@
 module VirtFS
+  # VirtFS Dir representation - implements the core Ruby Dir methods, dispatching
+  # to underlying mounted VirtFS filesystems
   class VDir
     include DirInstanceDelegate
 
     VfsRealDir.constants.each { |cn| const_set(cn, VfsRealDir.const_get(cn)) }
 
+    # VDir initializer
+    #
+    # @param dir_obj [VirtFS::FS::Dir] handle to filesystem specific dir obj
+    # @param path [String] path at which the dir resides
+    #
     def initialize(dir_obj, path)
       @open_path = path
       __setobj__(dir_obj)
@@ -19,6 +26,7 @@ module VirtFS
       rv
     end
 
+    # @return [String] path which dir resides
     def path
       @open_path
     end
@@ -36,10 +44,20 @@ module VirtFS
 
     # Class methods
     class << self
+      # Return dir entries matching the specified glob pattern
+      #
+      # @param glob_pattern [String,Regex] dir entry pattern to match
+      # @see Dir.[]
+      #
       def [](glob_pattern)
         glob(glob_pattern, 0)
       end
 
+      # Change working directory to specified dir
+      #
+      # @param dir [String] path to change working directory to
+      # @see Dir.chdir
+      #
       def chdir(dir = nil)
         dir ||= VfsRealDir.home
         raise SystemCallError.new(dir, Errno::ENOENT::Errno) unless exist?(dir)
@@ -56,11 +74,21 @@ module VirtFS
         0
       end
 
+      # Change root dir to specified dir
+      #
+      # @param dir [String] dir to change root dir to
+      # @see Dir.chroot
+      #
       def chroot(dir)
         VirtFS.dir_chroot(dir)
         0
       end
 
+      # Delete specified dir
+      #
+      # @param dir [String] dir to delete
+      # @see Dir.delete
+      #
       def delete(dir)
         VirtFS.fs_lookup_call(dir, true) { |p| dir_delete(p) }
         0
@@ -68,10 +96,23 @@ module VirtFS
       alias_method :unlink, :delete
       alias_method :rmdir, :delete
 
+      # Return array containing entries in specified dir
+      #
+      # @param dir [String] dir which to enumerate entries
+      #
+      # @return [Array<DirEntry>]  array of dir entry instances
+      #
+      # @see Dir.entries
+      #
       def entries(dir)
         VirtFS.fs_lookup_call(dir) { |p| dir_entries(p) }
       end
 
+      # Return bool indicating if specified dir exists
+      #
+      # @param dir [String] directory path to verify
+      # @return [Boolean] indicating if dir exists
+      #
       def exist?(dir)
         begin
           fs, p = VirtFS.path_lookup(dir)
@@ -82,15 +123,30 @@ module VirtFS
       end
       alias_method :exists?, :exist?
 
+      # Invoke block for each entry in dir
+      #
+      # @param dir [String] dir which to lookup entries
+      # @yield block to invoke
       def foreach(dir, &block)
         VirtFS.fs_lookup_call(dir) { |p| dir_foreach(p, &block) }
       end
 
+      # @return [String] current working directory
       def getwd
         VirtFS.dir_getwd
       end
       alias_method :pwd, :getwd
 
+      # Return directory entries matching specified glob pattern
+      #
+      # @param glob_pattern [String] pattern to match
+      # @param flags [Integer] file match flags
+      # @yield block invoked with each match if specified
+      #
+      # @see VfsRealFile.fnmatch
+      # @see FindClassMethods#dir_and_glob which does most of the work regarding globbing
+      # @see FindClassMethods#find which retrieves stats information & dir entries for found files
+      #
       def glob(glob_pattern, flags = 0)
         search_path, specified_path, glob = VirtFS.dir_and_glob(glob_pattern)
 
@@ -122,15 +178,24 @@ module VirtFS
         VfsRealDir.home(*args)
       end
 
+      # Make new dir at specified path
+      #
+      # @param dir [String] path to create
+      # @param permissions [Integer] initial permission to assign to dir
+      #
       def mkdir(dir, permissions = 0700)
         VirtFS.fs_lookup_call(dir, true) { |p| dir_mkdir(p, permissions) }
         0
       end
 
+      # Instantiate new directory instance.
       #
-      # Instantiate directory instance.
+      # @param dir [String] path to dir to instantiate
+      # @param hash_args [Hash] args to use when creating Dir instance
       #
-
+      # @see VirtFS.fs_call
+      # @see ThinDirDelegator
+      #
       def new(dir, hash_args = {})
         fs, p = VirtFS.path_lookup(dir)
         fs_obj = VirtFS.fs_call(fs) { dir_new(p, hash_args, dir, VDir.getwd) }
@@ -140,6 +205,14 @@ module VirtFS
         obj
       end
 
+      # Open specified existing dir and invoke block with it before closing
+      #
+      # @param dir [String] path to dir to instantiate
+      # @param hash_args [Hash] args to use when creating Dir instance
+      #
+      # @yield the directory instance
+      # @see .new
+      #
       def open(dir, hash_args = {})
         dir_obj = new(dir, hash_args)
         return dir_obj unless block_given?

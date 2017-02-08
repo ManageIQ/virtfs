@@ -1,4 +1,6 @@
 module VirtFS
+  # I/O Buffer utility class, provides a fixed length byte buffer
+  # for I/O operations
   class IOBuffer
     attr_accessor :min_buf_sz, :external_encoding, :sync
     attr_reader   :buffer, :range

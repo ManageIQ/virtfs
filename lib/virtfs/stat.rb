@@ -1,7 +1,9 @@
 module VirtFS
+  # File Stat, contains attributes common to files on all files systems
   class Stat
     include Comparable
 
+    # Specified File Attributes supported by VirtFS (auto converted to symbols)
     ATTR_ACCESSORS = %i(
       atime
       blksize
@@ -46,6 +48,10 @@ module VirtFS
       zero?
     )
 
+    # Helper to convert attribute name to instance variable name
+    #
+    # @param name [String] string name
+    # @return [String] string instance variable name
     def self.iv_name(name)
       name = name.to_s.chomp('?') if name.to_s.end_with?('?')
       "@#{name}"
@@ -53,6 +59,9 @@ module VirtFS
 
     ATTR_ACCESSORS.each { |aa| class_eval("def #{aa}; #{iv_name(aa)}; end") }
 
+    # Attribute intializer, accepts Stat or Hash containing attributes
+    #
+    # @param obj [Stat,Hash] instance of object containing stat info to initialize
     def initialize(obj)
       if obj.is_a?(VfsRealFile::Stat)
         stat_init(obj)
@@ -61,6 +70,7 @@ module VirtFS
       end
     end
 
+    # Sort file stats by modify time
     def <=>(other)
       return -1 if mtime < other.mtime
       return  1 if mtime > other.mtime
