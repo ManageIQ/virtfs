@@ -2,7 +2,9 @@ module VirtFS
   # VirtFS File representation - implements the core Ruby File methods, dispatching
   # to underlying mounted VirtFS filesystems
   #
-  class VFile < VIO
+  class VFile < VIO # rubocop:disable ClassLength
+    attr_accessor :fs_mod_obj
+
     include FileInstanceDelegate
 
     VfsRealFile.constants.each { |cn| const_set(cn, VfsRealFile.const_get(cn)) }
@@ -451,18 +453,26 @@ module VirtFS
       #
       # @param file_id [String] file identifier (usually path)
       # @param args args to forward to file initializer
-      def new(file_id, *args)
+      def new(file_id, *args) # rubocop:disable AbcSize
         if file_id.respond_to?(:to_int)
           fs_obj = VfsRealIO.new(file_id, *args)
         else
           parsed_args = FileModesAndOptions.new(*args)
           fs, p = VirtFS.path_lookup(file_id, false, false)
           fs_obj = VirtFS.fs_call(fs) { file_new(p, parsed_args, file_id, VDir.getwd) }
-          fs_obj = ThinFileDelegator.new(fs_obj, file_id, p, parsed_args) if fs.thin_interface?
         end
 
         obj = allocate
-        obj.send(:initialize, fs_obj, file_id)
+        if fs.thin_interface?
+          obj.send(:initialize, ThinFileDelegator.new(fs_obj, file_id, p, parsed_args), file_id)
+        else
+          obj.send(:initialize, fs_obj, file_id)
+        end
+
+        # fs_mod_obj always points to the fs module's file object
+        # for use by fs-specific extension modules
+        obj.fs_mod_obj = fs_obj
+        obj.extend(fs_obj.extension_module) if fs_obj.respond_to?(:extension_module) # fs-specific extension module
         obj
       end
     end # class methods
