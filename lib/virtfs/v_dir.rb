@@ -1,7 +1,9 @@
 module VirtFS
   # VirtFS Dir representation - implements the core Ruby Dir methods, dispatching
   # to underlying mounted VirtFS filesystems
-  class VDir
+  class VDir # rubocop:disable ClassLength
+    attr_accessor :fs_mod_obj
+
     include DirInstanceDelegate
 
     VfsRealDir.constants.each { |cn| const_set(cn, VfsRealDir.const_get(cn)) }
@@ -199,9 +201,18 @@ module VirtFS
       def new(dir, hash_args = {})
         fs, p = VirtFS.path_lookup(dir)
         fs_obj = VirtFS.fs_call(fs) { dir_new(p, hash_args, dir, VDir.getwd) }
-        fs_obj = ThinDirDelegator.new(fs_obj, dir, p, hash_args) if fs.thin_interface?
+
         obj = allocate
-        obj.send(:initialize, fs_obj, dir)
+        if fs.thin_interface?
+          obj.send(:initialize, ThinDirDelegator.new(fs_obj, dir, p, hash_args), dir)
+        else
+          obj.send(:initialize, fs_obj, dir)
+        end
+
+        # fs_mod_obj always points to the fs module's file object
+        # for use by fs-specific extension modules
+        obj.fs_mod_obj = fs_obj
+        obj.extend(fs_obj.extension_module) if fs_obj.respond_to?(:extension_module) # fs-specific extension module
         obj
       end
 
