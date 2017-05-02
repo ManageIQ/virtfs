@@ -11,6 +11,9 @@ module VirtFS
   class BlockIO
     MIN_BLOCKS_TO_CACHE = 64
 
+    # Optional absolute block offset, always applied
+    attr_accessor :offset
+
     # BlockIO initializer
     #
     # @param io_obj [RawIO] instance of class defining #raw_read and #raw_write
@@ -25,6 +28,7 @@ module VirtFS
       @lba_end         = @size_in_blocks - 1
       @seek_pos        = 0
       @cache_range     = Range.new(-1, -1)
+      @offset          = 0
     end
 
     # Read len bytes from the block device and update seek_pos
@@ -106,13 +110,13 @@ module VirtFS
       # $log.debug "RawBlockIO.bread: start_sector = #{start_sector}, num_sectors = #{num_sectors}, @lba_end = #{@lba_end}"
       return nil if start_sector > @lba_end
       num_sectors = @size_in_blocks - start_sector if (start_sector + num_sectors) > @size_in_blocks
-      @io_obj.raw_read(start_sector * @block_size, num_sectors * @block_size)
+      @io_obj.raw_read(start_sector * @block_size + @offset, num_sectors * @block_size)
     end
 
     def bwrite(start_sector, num_sectors, buf)
       return nil if start_sector > @lba_end
       num_sectors = @size_in_blocks - start_sector if (start_sector + num_sectors) > @size_in_blocks
-      @io_obj.raw_write(buf, start_sector * @block_size, num_sectors * @block_size)
+      @io_obj.raw_write(buf, start_sector * @block_size + @offset, num_sectors * @block_size)
     end
 
     def bread_cached(start_sector, num_sectors)
