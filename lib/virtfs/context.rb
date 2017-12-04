@@ -1,3 +1,5 @@
+require "log_decorator"
+
 module VirtFS
   # FS-specific state under which FS calls occur.
   #
@@ -6,6 +8,8 @@ module VirtFS
   # dispatching target FS calls from that thread.
   # This class implements the core functionality behind the FS context
   class Context
+    include LogDecorator::Logging
+
     attr_reader :key
 
     def initialize
@@ -202,6 +206,7 @@ module VirtFS
     # @param p [String] path to lookup
     # @param include_last [Boolean] indicates if last path component should be returned
     def expand_links(p, include_last = true)
+      _log.debug "path = #{p}"
       cp = VfsRealFile::SEPARATOR
       components = p.split(VfsRealFile::SEPARATOR)
       components.shift if components[0] == "" # root
