@@ -1,7 +1,6 @@
 language: ruby
 rvm:
 - "2.2"
-sudo: false
 cache: bundler
 env:
 - FS_INTERFACE=thin
